@@ -1,11 +1,17 @@
 /**
  * Quiet Room - UI Module
- * UI 관련 (Core UI 사용)
+ * UI 관련 (독립 구현)
  * @module quiet-room/ui
  */
 
-import { Toast, Modal, Dialog, Banner } from '../../../core/ui/index.js';
-import { escapeHtml } from '../../../core/utils/index.js';
+/**
+ * HTML 이스케이프
+ */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 
 /**
  * DOM 요소 참조
@@ -32,11 +38,6 @@ export const els = {
   onlineStatus: document.getElementById("onlineStatus"),
   themeToggle: document.getElementById("themeToggle")
 };
-
-/**
- * Toast 인스턴스
- */
-export const toast = new Toast();
 
 /**
  * Relay 상태 업데이트

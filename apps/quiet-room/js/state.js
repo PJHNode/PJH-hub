@@ -1,11 +1,67 @@
 /**
  * Quiet Room - State Management
- * 상태 관리
+ * 상태 관리 (독립 구현)
  * @module quiet-room/state
  */
 
-import { randomToken } from '../../../core/utils/index.js';
-import { LocalStorage } from '../../../core/storage/index.js';
+/**
+ * 랜덤 토큰 생성
+ */
+function randomToken(length = 8) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+/**
+ * 로컬 스토리지 래퍼
+ */
+class LocalStorage {
+  constructor(prefix) {
+    this.prefix = prefix;
+  }
+
+  get(key, defaultValue = null) {
+    try {
+      const value = localStorage.getItem(`${this.prefix}:${key}`);
+      return value ? JSON.parse(value) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  }
+
+  set(key, value) {
+    try {
+      localStorage.setItem(`${this.prefix}:${key}`, JSON.stringify(value));
+    } catch (e) {
+      console.error('LocalStorage error:', e);
+    }
+  }
+
+  remove(key) {
+    try {
+      localStorage.removeItem(`${this.prefix}:${key}`);
+    } catch (e) {
+      console.error('LocalStorage error:', e);
+    }
+  }
+
+  clear() {
+    try {
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith(this.prefix + ':')) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      console.error('LocalStorage error:', e);
+    }
+  }
+}
 
 /**
  * 앱 상태

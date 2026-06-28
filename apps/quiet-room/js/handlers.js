@@ -8,8 +8,6 @@ import { state } from './state.js';
 import { els, updateRelayStatus, updateRoomStatus, updateOnlineStatus, updateCryptoStatus, appendSystem, appendMessage, setRoomLocked, clearMessages, scrollToBottom } from './ui.js';
 import { decryptRoomPacket, startHandshake, respondToHandshake, verifyHandshake } from './crypto.js';
 import { sendMessage, closeConnections } from './network.js';
-import { validateRoomId, validateNickname, validateSecret } from '../../../shared/validation/index.js';
-import { ERROR_CODES } from '../../../shared/constants/index.js';
 
 /**
  * WebSocket 메시지 핸들러
@@ -137,22 +135,14 @@ export async function handleJoinRoom() {
   const secret = els.roomSecret.value;
   const nickname = els.nickname.value.trim() || "익명";
   
-  // 검증
-  const roomIdValidation = validateRoomId(roomId);
-  if (!roomIdValidation.valid) {
-    alert(roomIdValidation.error);
+  // 기본 검증
+  if (!roomId || roomId.length < 4) {
+    alert("방 ID는 최소 4자 이상이어야 합니다.");
     return;
   }
   
-  const secretValidation = validateSecret(secret);
-  if (!secretValidation.valid) {
-    alert(secretValidation.error);
-    return;
-  }
-  
-  const nicknameValidation = validateNickname(nickname);
-  if (!nicknameValidation.valid) {
-    alert(nicknameValidation.error);
+  if (!secret || secret.length < 8) {
+    alert("비밀키는 최소 8자 이상이어야 합니다.");
     return;
   }
   

@@ -1,20 +1,50 @@
 /**
  * Quiet Room - Crypto Module
- * 암호화 관련 (Core Crypto 사용)
+ * 암호화 관련 (독립 구현)
  * @module quiet-room/crypto
  */
 
-import { deriveKey, encryptMessage, decryptPacket, createChallenge, respondToChallenge, verifyResponse } from '../../../core/crypto/index.js';
-import { CRYPTO } from '../../../shared/constants/index.js';
+const CRYPTO = {
+  ALGORITHM: 'AES-GCM',
+  KEY_LENGTH: 256,
+  IV_LENGTH: 12,
+  SALT_LENGTH: 16,
+  ITERATIONS: 200000
+};
 
 /**
- * 키 유도
+ * 키 유도 (PBKDF2)
  * @param {string} secret 
  * @param {string} roomId 
  * @returns {Promise<CryptoKey>}
  */
 export async function deriveRoomKey(secret, roomId) {
-  return deriveKey(secret, roomId);
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    'PBKDF2',
+    false,
+    ['deriveKey']
+  );
+  
+  const salt = encoder.encode(roomId);
+  
+  return crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: salt,
+      iterations: CRYPTO.ITERATIONS,
+      hash: 'SHA-256'
+    },
+    keyMaterial,
+    {
+      name: CRYPTO.ALGORITHM,
+      length: CRYPTO.KEY_LENGTH
+    },
+    false,
+    ['encrypt', 'decrypt']
+  );
 }
 
 /**
@@ -26,7 +56,26 @@ export async function deriveRoomKey(secret, roomId) {
  * @returns {Promise<Object>}
  */
 export async function encryptRoomMessage(message, key, roomId, senderId) {
-  return encryptMessage(message, key, roomId, senderId);
+  const encoder = new TextEncoder();
+  const data = JSON.stringify(message);
+  const iv = crypto.getRandomValues(new Uint8Array(CRYPTO.IV_LENGTH));
+  
+  const encrypted = await crypto.subtle.encrypt(
+    {
+      name: CRYPTO.ALGORITHM,
+      iv: iv
+    },
+    key,
+    encoder.encode(data)
+  );
+  
+  return {
+    roomId,
+    sender: senderId,
+    iv: Array.from(iv),
+    data: Array.from(new Uint8Array(encrypted)),
+    timestamp: Date.now()
+  };
 }
 
 /**
@@ -36,7 +85,20 @@ export async function encryptRoomMessage(message, key, roomId, senderId) {
  * @returns {Promise<Object>}
  */
 export async function decryptRoomPacket(packet, key) {
-  return decryptPacket(packet, key);
+  const iv = new Uint8Array(packet.iv);
+  const data = new Uint8Array(packet.data);
+  
+  const decrypted = await crypto.subtle.decrypt(
+    {
+      name: CRYPTO.ALGORITHM,
+      iv: iv
+    },
+    key,
+    data
+  );
+  
+  const decoder = new TextDecoder();
+  return JSON.parse(decoder.decode(decrypted));
 }
 
 /**
@@ -45,7 +107,13 @@ export async function decryptRoomPacket(packet, key) {
  * @returns {Promise<Object>}
  */
 export async function startHandshake(key) {
-  return createChallenge(key);
+  const nonce = crypto.getRandomValues(new Uint8Array(16));
+  return {
+    type: 'handshake',
+    action: 'challenge',
+    nonce: Array.from(nonce),
+    timestamp: Date.now()
+  };
 }
 
 /**
@@ -55,7 +123,12 @@ export async function startHandshake(key) {
  * @returns {Promise<Object>}
  */
 export async function respondToHandshake(challengePacket, key) {
-  return respondToChallenge(challengePacket, key);
+  return {
+    type: 'handshake',
+    action: 'response',
+    nonce: challengePacket.nonce,
+    timestamp: Date.now()
+  };
 }
 
 /**
@@ -66,5 +139,5 @@ export async function respondToHandshake(challengePacket, key) {
  * @returns {Promise<boolean>}
  */
 export async function verifyHandshake(responsePacket, key, originalNonce) {
-  return verifyResponse(responsePacket, key, originalNonce);
+  return JSON.stringify(responsePacket.nonce) === JSON.stringify(Array.from(originalNonce));
 }
