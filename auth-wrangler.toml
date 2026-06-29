@@ -1,0 +1,12 @@
+name = "pjh-auth"
+main = "auth-worker.js"
+compatibility_date = "2024-01-01"
+account_id = "c31bb04e7cc014b454684a18f48031c4"
+
+[[kv_namespaces]]
+binding = "USERS"
+id = "USERS_KV_ID"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "SESSIONS_KV_ID"
