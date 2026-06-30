@@ -6,4 +6,4 @@ account_id = "c31bb04e7cc014b454684a18f48031c4"
 [[d1_databases]]
 binding = "DB"
 database_name = "forum"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "906b21d1-7723-4f5b-b579-a356cd4a0f66"
