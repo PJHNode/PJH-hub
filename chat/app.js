@@ -93,7 +93,8 @@ function appendSystem(text, cls) {
   div.className = cls || "system-msg";
   div.textContent = text;
   els.messages.appendChild(div);
-  els.messages.scrollTop = els.messages.scrollHeight;
+  // column-reverse 레이아웃에서는 scrollTop 0 이 "맨 아래(최신)" 위치
+  els.messages.scrollTop = 0;
 }
 
 function appendMessage(message, isMine) {
@@ -112,7 +113,8 @@ function appendMessage(message, isMine) {
   }
   div.innerHTML = '<div class="message-meta"><span class="sender">' + escapeHtml(message.nickname) + '</span><span>' + time + '</span></div>' + body;
   els.messages.appendChild(div);
-  els.messages.scrollTop = els.messages.scrollHeight;
+  // column-reverse 레이아웃에서는 scrollTop 0 이 "맨 아래(최신)" 위치
+  els.messages.scrollTop = 0;
 }
 
 function openImage(src) {
