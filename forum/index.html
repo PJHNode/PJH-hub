@@ -18,7 +18,7 @@
     html, body { height: 100%; background: var(--page); color: var(--ink); font-size: 13px; }
     [data-theme="dark"] body { background: #080808; }
 
-    .shell { max-width: 760px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+    .shell { max-width: 800px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 
     .topbar { background: var(--bar); padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; gap: 8px; flex-wrap: wrap; }
     .brand-row { display: flex; align-items: center; gap: 8px; }
@@ -31,17 +31,30 @@
     [data-theme="dark"] .topbar-btn:hover { background: #ddd; color: #000; border-color: #ddd; }
     .user-badge { font-size: 10px; color: #bbb; padding: 2px 6px; border: 1px solid #444; }
 
+    /* ── 카테고리 탭 ── */
+    .category-tabs { display: flex; border-bottom: 2px solid #000; background: var(--soft); }
+    .cat-tab {
+      flex: 1; padding: 10px 12px; background: transparent; border: none; border-right: 1px solid var(--line);
+      color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; text-align: left;
+    }
+    .cat-tab:last-child { border-right: none; }
+    .cat-tab strong { display: block; font-size: 12.5px; color: var(--ink); margin-bottom: 2px; }
+    .cat-tab span { font-size: 10px; color: var(--muted); }
+    .cat-tab.active { background: var(--field); border-bottom: 2px solid var(--ink); margin-bottom: -2px; }
+    .cat-tab:hover:not(.active) { background: var(--field); }
+
     /* ── 로그인 필요 안내 ── */
     .login-notice { padding: 14px 12px; border-bottom: 1px solid var(--line); background: var(--soft); font-size: 11.5px; color: var(--muted); line-height: 1.6; }
     .login-notice a { color: var(--ink); text-decoration: underline; }
 
     /* ── 작성 폼 ── */
     .write-box { padding: 12px; border-bottom: 1px solid var(--line); background: var(--soft); display: flex; flex-direction: column; gap: 6px; }
-    .write-box textarea {
+    .write-box input[type="text"], .write-box textarea {
       width: 100%; padding: 7px; border: 1px solid var(--line); border-radius: 0;
-      background: var(--field); color: var(--ink); font: inherit; font-size: 12px; resize: vertical; min-height: 64px;
+      background: var(--field); color: var(--ink); font: inherit; font-size: 12px; resize: vertical;
     }
-    .write-box textarea:focus { outline: none; border-color: var(--ink); }
+    .write-box input[type="text"]:focus, .write-box textarea:focus { outline: none; border-color: var(--ink); }
+    .write-box textarea { min-height: 64px; }
     .char-count { font-size: 10px; color: var(--muted); text-align: right; }
     .btn-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .write-as { font-size: 10px; color: var(--muted); }
@@ -58,12 +71,18 @@
     .post-list { flex: 1; display: flex; flex-direction: column; }
     .post-item { padding: 12px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px; background: var(--page); }
     .post-item:hover { background: var(--soft); }
+    .post-title-row { display: flex; align-items: center; gap: 6px; }
+    .post-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+    .answered-badge { font-size: 9px; letter-spacing: 0.04em; background: var(--ink); color: var(--page); padding: 1px 6px; flex-shrink: 0; }
     .post-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .post-nick { font-weight: 700; font-size: 11px; color: var(--ink); }
     .post-date { font-size: 10px; color: var(--muted); }
     .post-content { font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
-    .post-del { background: transparent; border: 1px solid var(--line); color: var(--muted); font-size: 10px; padding: 1px 6px; }
+    .post-actions { display: flex; gap: 6px; align-items: center; }
+    .post-del, .post-answer { background: transparent; border: 1px solid var(--line); color: var(--muted); font-size: 10px; padding: 1px 6px; }
     .post-del:hover { border-color: #888; color: var(--ink); background: transparent; }
+    .post-answer:hover { border-color: #888; color: var(--ink); background: transparent; }
+    .post-answer.is-answered { border-color: var(--ink); color: var(--ink); }
 
     .empty-state { padding: 40px; text-align: center; color: var(--muted); font-size: 12px; line-height: 2; }
     .footer { border-top: 1px solid var(--line); padding: 6px 12px; font-size: 9px; color: var(--muted); letter-spacing: 0.05em; text-align: center; background: var(--soft); }
@@ -86,6 +105,18 @@
     </div>
   </header>
 
+  <!-- 카테고리 탭 -->
+  <nav class="category-tabs">
+    <button class="cat-tab active" data-category="free">
+      <strong>자유게시판</strong>
+      <span>잡담, 정보 교류 등 종합 커뮤니티 공간</span>
+    </button>
+    <button class="cat-tab" data-category="qna">
+      <strong>주제별 Q&amp;A</strong>
+      <span>궁금한 점 질문 및 답변 채택</span>
+    </button>
+  </nav>
+
   <!-- 비로그인 안내 -->
   <div class="login-notice" id="loginNotice" style="display:none;">
     <strong>Forum은 PJH Hub 계정이 필요합니다.</strong><br />
@@ -94,11 +125,12 @@
 
   <!-- 작성 폼 (로그인 시에만 표시) -->
   <div class="write-box" id="writeBox" style="display:none;">
-    <textarea id="content" maxlength="500" placeholder="무슨 생각이든 자유롭게 남겨보세요. (최대 500자)"></textarea>
+    <input type="text" id="titleInput" maxlength="100" placeholder="질문 제목" style="display:none;" />
+    <textarea id="content" maxlength="1000" placeholder="무슨 생각이든 자유롭게 남겨보세요."></textarea>
     <div class="btn-row">
       <span class="write-as" id="writeAs"></span>
       <div style="display:flex;align-items:center;gap:8px;">
-        <span class="char-count" id="charCount">0 / 500</span>
+        <span class="char-count" id="charCount">0 / 1000</span>
         <button class="primary" id="submitBtn">등록</button>
       </div>
     </div>
@@ -115,6 +147,7 @@
 <script src="../auth-widget.js"></script>
 <script>
   const API = "https://forum.chaostatix.workers.dev";
+  var currentCategory = "free";
 
   // ── 테마 ──
   function initTheme() {
@@ -133,6 +166,26 @@
     btn.textContent = document.documentElement.getAttribute("data-theme") === "dark" ? "[ LIGHT ]" : "[ DARK ]";
   }
   document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
+  // ── 카테고리 탭 전환 ──
+  document.querySelectorAll(".cat-tab").forEach(function(tab) {
+    tab.addEventListener("click", function() {
+      document.querySelectorAll(".cat-tab").forEach(function(t) { t.classList.remove("active"); });
+      tab.classList.add("active");
+      currentCategory = tab.dataset.category;
+
+      var titleInput = document.getElementById("titleInput");
+      var content = document.getElementById("content");
+      if (currentCategory === "qna") {
+        titleInput.style.display = "";
+        content.placeholder = "질문 내용을 자세히 적어주세요.";
+      } else {
+        titleInput.style.display = "none";
+        content.placeholder = "무슨 생각이든 자유롭게 남겨보세요.";
+      }
+      loadPosts();
+    });
+  });
 
   // ── 로그인 상태에 따라 작성 UI 토글 ──
   function refreshAuthUI() {
@@ -156,7 +209,7 @@
   }
 
   document.getElementById("content").addEventListener("input", function() {
-    document.getElementById("charCount").textContent = this.value.length + " / 500";
+    document.getElementById("charCount").textContent = this.value.length + " / 1000";
   });
 
   function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -176,8 +229,13 @@
 
   async function loadPosts() {
     var list = document.getElementById("postList");
+    list.innerHTML = '<div class="empty-state">불러오는 중...</div>';
     try {
-      var res = await fetch(API + "/posts");
+      var res = await fetch(API + "/posts?category=" + currentCategory);
+      if (!res.ok) {
+        var errBody = await res.json().catch(function() { return {}; });
+        throw new Error(errBody.error || ("HTTP " + res.status));
+      }
       var posts = await res.json();
       if (!posts.length) {
         list.innerHTML = '<div class="empty-state">아직 글이 없습니다.<br>첫 번째 글을 남겨보세요.</div>';
@@ -185,26 +243,46 @@
       }
       var myId = currentUserId();
       list.innerHTML = posts.map(function(p) {
-        var canDelete = myId && myId === p.user_id;
+        var canManage = myId && myId === p.user_id;
+        var titleBlock = "";
+        if (p.category === "qna") {
+          titleBlock = '<div class="post-title-row">' +
+            '<span class="post-title">' + esc(p.title) + '</span>' +
+            (p.is_answered ? '<span class="answered-badge">채택됨</span>' : '') +
+            '</div>';
+        }
+        var actions = '<div class="post-actions">';
+        if (canManage && p.category === "qna") {
+          actions += '<button class="post-answer' + (p.is_answered ? ' is-answered' : '') + '" onclick="toggleAnswer(' + p.id + ')">' + (p.is_answered ? '채택 취소' : '답변 채택') + '</button>';
+        }
+        if (canManage) {
+          actions += '<button class="post-del" onclick="deletePost(' + p.id + ')">삭제</button>';
+        }
+        actions += '</div>';
+
         return '<div class="post-item">' +
+          titleBlock +
           '<div class="post-meta">' +
           '<span class="post-nick">' + esc(p.real_name) + '</span>' +
           '<div style="display:flex;align-items:center;gap:8px;">' +
           '<span class="post-date">' + timeAgo(p.created_at) + '</span>' +
-          (canDelete ? '<button class="post-del" onclick="deletePost(' + p.id + ')">삭제</button>' : '') +
+          actions +
           '</div></div>' +
           '<div class="post-content">' + esc(p.content) + '</div>' +
           '</div>';
       }).join('');
     } catch(e) {
-      list.innerHTML = '<div class="empty-state">글을 불러올 수 없습니다.<br>잠시 후 다시 시도해주세요.</div>';
+      list.innerHTML = '<div class="empty-state">글을 불러올 수 없습니다.<br>' + esc(e.message || "잠시 후 다시 시도해주세요.") + '</div>';
     }
   }
 
   document.getElementById("submitBtn").addEventListener("click", async function() {
     var session = window.PJHAuth ? window.PJHAuth.getSession() : null;
     if (!session) { alert("로그인이 필요합니다."); return; }
+
+    var title = document.getElementById("titleInput").value.trim();
     var content = document.getElementById("content").value.trim();
+    if (currentCategory === "qna" && !title) { alert("질문 제목을 입력하세요."); return; }
     if (!content) { alert("내용을 입력하세요."); return; }
 
     this.disabled = true;
@@ -213,20 +291,34 @@
       var res = await fetch(API + "/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.token },
-        body: JSON.stringify({ content: content }),
+        body: JSON.stringify({ category: currentCategory, title: title, content: content }),
       });
+      var data = await res.json().catch(function() { return {}; });
       if (res.ok) {
         document.getElementById("content").value = "";
-        document.getElementById("charCount").textContent = "0 / 500";
+        document.getElementById("titleInput").value = "";
+        document.getElementById("charCount").textContent = "0 / 1000";
         await loadPosts();
       } else {
-        var err = await res.json();
-        alert(err.error || "오류가 발생했습니다.");
+        alert(data.error || "오류가 발생했습니다.");
       }
-    } catch(e) { alert("서버 연결 실패"); }
+    } catch(e) { alert("서버 연결 실패: " + e.message); }
     this.disabled = false;
     this.textContent = "등록";
   });
+
+  async function toggleAnswer(id) {
+    var session = window.PJHAuth ? window.PJHAuth.getSession() : null;
+    if (!session) return;
+    try {
+      var res = await fetch(API + "/posts/" + id, {
+        method: "PATCH",
+        headers: { "Authorization": "Bearer " + session.token },
+      });
+      if (res.ok) { await loadPosts(); }
+      else { var err = await res.json(); alert(err.error || "처리 실패"); }
+    } catch(e) { alert("서버 연결 실패: " + e.message); }
+  }
 
   async function deletePost(id) {
     var session = window.PJHAuth ? window.PJHAuth.getSession() : null;
@@ -239,7 +331,7 @@
       });
       if (res.ok) { await loadPosts(); }
       else { var err = await res.json(); alert(err.error || "삭제 실패"); }
-    } catch(e) { alert("서버 연결 실패"); }
+    } catch(e) { alert("서버 연결 실패: " + e.message); }
   }
 
   // ── 초기화 ──
@@ -247,7 +339,6 @@
   refreshAuthUI();
   loadPosts();
   setInterval(loadPosts, 30000);
-  // 로그인/로그아웃이 다른 탭(Hub)에서 일어나도 감지되도록 폴링
   setInterval(refreshAuthUI, 2000);
 </script>
 </body>
