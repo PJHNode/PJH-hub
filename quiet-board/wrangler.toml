@@ -1,0 +1,9 @@
+name = "quiet-board"
+main = "board-worker.js"
+compatibility_date = "2024-01-01"
+account_id = "c31bb04e7cc014b454684a18f48031c4"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "quiet-board"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
