@@ -6,7 +6,7 @@
    공통으로 읽는 약속된 키이므로, 채팅 페이지에서도 이 스크립트를
    그대로 불러와 재사용한다 (동일 출처/도메인이므로 sessionStorage 공유됨).
 
-   사용법: index.html, quiet-room/index.html 양쪽 모두
+   사용법: index.html, chat/index.html 양쪽 모두
    <script src="../auth-widget.js"></script> (경로는 상대위치에 맞게)
    ============================================================ */
 
