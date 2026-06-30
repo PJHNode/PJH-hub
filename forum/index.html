@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forum — PJH Hub</title>
+  <style>
+    :root {
+      --page: #f5f5f5; --bar: #111; --ink: #111; --muted: #666;
+      --line: #d0d0d0; --field: #fff; --soft: #efefef;
+      font-family: "SF Mono","Fira Mono","Consolas","Menlo",monospace;
+    }
+    [data-theme="dark"] {
+      --page: #0d0d0d; --bar: #0a0a0a; --ink: #e0e0e0; --muted: #777;
+      --line: #2a2a2a; --field: #181818; --soft: #141414;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: var(--page); color: var(--ink); font-size: 13px; }
+    [data-theme="dark"] body { background: #080808; }
+
+    /* ── 레이아웃 ── */
+    .shell { max-width: 760px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+
+    /* ── 탑바 ── */
+    .topbar { background: var(--bar); padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; gap: 8px; flex-wrap: wrap; }
+    .brand-row { display: flex; align-items: center; gap: 8px; }
+    .mark { width: 20px; height: 20px; border: 1px solid #fff; color: #fff; font-weight: 700; font-size: 12px; display: grid; place-items: center; }
+    .topbar h1 { font-size: 13px; color: #fff; letter-spacing: 0.05em; font-weight: 700; }
+    .eyebrow { font-size: 9px; color: #888; letter-spacing: 0.04em; }
+    .topbar-controls { display: flex; gap: 6px; }
+    .topbar-btn { background: transparent; border: 1px solid #444; color: #888; font-size: 9px; letter-spacing: 0.08em; padding: 2px 6px; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; }
+    .topbar-btn:hover { background: #fff; color: #000; border-color: #fff; }
+    [data-theme="dark"] .topbar-btn:hover { background: #ddd; color: #000; border-color: #ddd; }
+
+    /* ── 작성 폼 ── */
+    .write-box { padding: 12px; border-bottom: 1px solid var(--line); background: var(--soft); display: flex; flex-direction: column; gap: 6px; }
+    .write-box label { font-size: 10px; color: var(--muted); letter-spacing: 0.03em; display: grid; gap: 3px; }
+    .write-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .write-box input, .write-box textarea {
+      width: 100%; padding: 5px 7px; border: 1px solid var(--line); border-radius: 0;
+      background: var(--field); color: var(--ink); font: inherit; font-size: 12px; resize: vertical;
+    }
+    .write-box input:focus, .write-box textarea:focus { outline: none; border-color: var(--ink); }
+    textarea { min-height: 64px; }
+    .char-count { font-size: 10px; color: var(--muted); text-align: right; }
+    .btn-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .notice-tip { font-size: 10px; color: var(--muted); }
+    button { border: 1px solid #999; background: #e8e8e8; color: #111; padding: 4px 14px; font: inherit; font-size: 12px; cursor: pointer; border-radius: 0; }
+    button:hover { background: #fff; border-color: #444; }
+    button.primary { background: #111; color: #fff; border-color: #000; font-weight: 700; }
+    button.primary:hover { background: #333; }
+    [data-theme="dark"] button { background: #1a1a1a; border-color: #444; color: #ccc; }
+    [data-theme="dark"] button:hover { background: #2a2a2a; }
+    [data-theme="dark"] button.primary { background: #ddd; color: #000; border-color: #ddd; }
+
+    /* ── 게시글 목록 ── */
+    .post-list { flex: 1; display: flex; flex-direction: column; }
+    .post-item { padding: 12px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px; background: var(--page); }
+    .post-item:hover { background: var(--soft); }
+    .post-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .post-nick { font-weight: 700; font-size: 11px; color: var(--ink); }
+    .post-date { font-size: 10px; color: var(--muted); }
+    .post-content { font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+    .post-del { background: transparent; border: 1px solid var(--line); color: var(--muted); font-size: 10px; padding: 1px 6px; }
+    .post-del:hover { border-color: #888; color: var(--ink); background: transparent; }
+    [data-theme="dark"] .post-del { background: transparent; }
+
+    /* ── 삭제 모달 ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--page); border: 1px solid var(--line); padding: 20px; width: min(320px, 90vw); display: flex; flex-direction: column; gap: 12px; }
+    .modal h3 { font-size: 13px; }
+    .modal input { width: 100%; padding: 5px 7px; border: 1px solid var(--line); background: var(--field); color: var(--ink); font: inherit; border-radius: 0; }
+    .modal input:focus { outline: none; border-color: var(--ink); }
+    .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+    .modal-err { font-size: 11px; color: #c66; display: none; }
+    .modal-err.show { display: block; }
+
+    /* ── 빈 상태 / 로딩 ── */
+    .empty-state { padding: 40px; text-align: center; color: var(--muted); font-size: 12px; line-height: 2; }
+
+    /* ── 푸터 ── */
+    .footer { border-top: 1px solid var(--line); padding: 6px 12px; font-size: 9px; color: var(--muted); letter-spacing: 0.05em; text-align: center; background: var(--soft); }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand-row">
+      <span class="mark">B</span>
+      <div>
+        <h1>Forum</h1>
+        <p class="eyebrow">no login · anonymous · delete with password</p>
+      </div>
+    </div>
+    <div class="topbar-controls">
+      <button class="topbar-btn" id="themeToggle">[ DARK ]</button>
+      <a class="topbar-btn" href="../">[ HUB ]</a>
+    </div>
+  </header>
+
+  <!-- 작성 폼 -->
+  <div class="write-box">
+    <div class="write-row">
+      <label>닉네임 <input id="nickname" type="text" maxlength="20" placeholder="익명" autocomplete="off" /></label>
+      <label>삭제 비밀번호 <input id="password" type="password" placeholder="나중에 삭제할 때 필요" autocomplete="off" /></label>
+    </div>
+    <label>
+      내용
+      <textarea id="content" maxlength="500" placeholder="무슨 생각이든 익명으로 남겨보세요. (최대 500자)"></textarea>
+    </label>
+    <div class="btn-row">
+      <span class="notice-tip">비밀번호는 내 글 삭제에만 사용됩니다.</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="char-count" id="charCount">0 / 500</span>
+        <button class="primary" id="submitBtn">등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 글 목록 -->
+  <div class="post-list" id="postList">
+    <div class="empty-state">불러오는 중...</div>
+  </div>
+
+  <footer class="footer">© 2026 PJH HUB · Anonymous &amp; Zero-Knowledge Tools</footer>
+</div>
+
+<!-- 삭제 모달 -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3>글 삭제</h3>
+    <p style="font-size:11px;color:var(--muted);">작성 시 입력한 비밀번호를 입력하세요.</p>
+    <input type="password" id="deletePassword" placeholder="비밀번호" />
+    <p class="modal-err" id="deleteErr">비밀번호가 맞지 않습니다.</p>
+    <div class="modal-btns">
+      <button id="deleteCancelBtn">취소</button>
+      <button class="primary" id="deleteConfirmBtn">삭제</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── 설정 ── Worker URL을 배포 후 교체하세요
+  const API = "https://quiet-board.chaostatix.workers.dev";
+
+  // ── 테마 ──
+  function initTheme() {
+    var saved = localStorage.getItem("pjh-theme");
+    if (saved === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    updateThemeBtn();
+  }
+  function toggleTheme() {
+    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    if (isDark) { document.documentElement.removeAttribute("data-theme"); localStorage.setItem("pjh-theme","light"); }
+    else { document.documentElement.setAttribute("data-theme","dark"); localStorage.setItem("pjh-theme","dark"); }
+    updateThemeBtn();
+  }
+  function updateThemeBtn() {
+    var btn = document.getElementById("themeToggle");
+    if (!btn) return;
+    btn.textContent = document.documentElement.getAttribute("data-theme") === "dark" ? "[ LIGHT ]" : "[ DARK ]";
+  }
+  document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
+  // ── 글자 수 카운트 ──
+  var contentEl = document.getElementById("content");
+  contentEl.addEventListener("input", function() {
+    document.getElementById("charCount").textContent = contentEl.value.length + " / 500";
+  });
+
+  // ── 글 목록 로드 ──
+  function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  function timeAgo(ts) {
+    var diff = Date.now() - ts;
+    var m = Math.floor(diff/60000), h = Math.floor(diff/3600000), d = Math.floor(diff/86400000);
+    if (d > 0) return d + "일 전";
+    if (h > 0) return h + "시간 전";
+    if (m > 0) return m + "분 전";
+    return "방금";
+  }
+
+  async function loadPosts() {
+    var list = document.getElementById("postList");
+    try {
+      var res = await fetch(API + "/posts");
+      var posts = await res.json();
+      if (!posts.length) {
+        list.innerHTML = '<div class="empty-state">아직 글이 없습니다.<br>첫 번째 글을 남겨보세요.</div>';
+        return;
+      }
+      list.innerHTML = posts.map(function(p) {
+        return '<div class="post-item">' +
+          '<div class="post-meta">' +
+          '<span class="post-nick">' + esc(p.nickname) + '</span>' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<span class="post-date">' + timeAgo(p.created_at) + '</span>' +
+          '<button class="post-del" onclick="openDelete(' + p.id + ')">삭제</button>' +
+          '</div></div>' +
+          '<div class="post-content">' + esc(p.content) + '</div>' +
+          '</div>';
+      }).join('');
+    } catch(e) {
+      list.innerHTML = '<div class="empty-state">글을 불러올 수 없습니다.<br>잠시 후 다시 시도해주세요.</div>';
+    }
+  }
+
+  // ── 글 등록 ──
+  document.getElementById("submitBtn").addEventListener("click", async function() {
+    var nickname = document.getElementById("nickname").value.trim() || "익명";
+    var password = document.getElementById("password").value;
+    var content  = document.getElementById("content").value.trim();
+    if (!content) { alert("내용을 입력하세요."); return; }
+    if (!password) { alert("삭제 비밀번호를 입력하세요."); return; }
+
+    this.disabled = true;
+    this.textContent = "등록 중…";
+    try {
+      var res = await fetch(API + "/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nickname, content, password }),
+      });
+      if (res.ok) {
+        document.getElementById("content").value = "";
+        document.getElementById("charCount").textContent = "0 / 500";
+        await loadPosts();
+      } else {
+        var err = await res.json();
+        alert(err.error || "오류가 발생했습니다.");
+      }
+    } catch(e) { alert("서버 연결 실패"); }
+    this.disabled = false;
+    this.textContent = "등록";
+  });
+
+  // ── 삭제 모달 ──
+  var deleteTargetId = null;
+
+  function openDelete(id) {
+    deleteTargetId = id;
+    document.getElementById("deletePassword").value = "";
+    document.getElementById("deleteErr").classList.remove("show");
+    document.getElementById("deleteModal").classList.add("open");
+    setTimeout(function() { document.getElementById("deletePassword").focus(); }, 50);
+  }
+
+  document.getElementById("deleteCancelBtn").addEventListener("click", function() {
+    document.getElementById("deleteModal").classList.remove("open");
+  });
+
+  document.getElementById("deleteConfirmBtn").addEventListener("click", async function() {
+    var password = document.getElementById("deletePassword").value;
+    if (!password) return;
+    this.disabled = true;
+    this.textContent = "삭제 중…";
+    try {
+      var res = await fetch(API + "/posts/" + deleteTargetId, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        document.getElementById("deleteModal").classList.remove("open");
+        await loadPosts();
+      } else {
+        document.getElementById("deleteErr").classList.add("show");
+      }
+    } catch(e) { alert("서버 연결 실패"); }
+    this.disabled = false;
+    this.textContent = "삭제";
+  });
+
+  // Enter로 삭제 확인
+  document.getElementById("deletePassword").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("deleteConfirmBtn").click();
+  });
+
+  // 모달 외부 클릭 닫기
+  document.getElementById("deleteModal").addEventListener("click", function(e) {
+    if (e.target === this) this.classList.remove("open");
+  });
+
+  // ── 초기화 ──
+  initTheme();
+  loadPosts();
+  setInterval(loadPosts, 30000); // 30초마다 자동 새로고침
+</script>
+</body>
+</html>
