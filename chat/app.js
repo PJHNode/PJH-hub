@@ -47,6 +47,7 @@ var state = {
   verifyToken: null, relayUrl: null,
   reconnectAttempts: 0, reconnectTimer: null, heartbeatTimer: null,
   intentionalClose: false,
+  msgWindowStart: 0, msgCount: 0,
 };
 
 // ── DOM ────────────────────────────────────────────────────────────────────
@@ -82,7 +83,7 @@ var els = {
 
 // ── UI 헬퍼 ────────────────────────────────────────────────────────────────
 function setStatus(el, text, cls) { el.textContent = text; el.className = "status" + (cls ? " " + cls : ""); }
-function resetOnlineStatus() { setStatus(els.onlineStatus, "오프라인"); }
+function resetOnlineStatus() { setStatus(els.onlineStatus, "참여자 —"); }
 
 function clearMessages() {
   els.messages.innerHTML = '<p class="empty" id="emptyMsg">방을 선택하거나 입장하면 채팅이 시작됩니다.</p>';
@@ -107,7 +108,7 @@ function appendMessage(message, isMine) {
   if (message.type === "image" && message.dataUrl) {
     body = '<img class="msg-image" src="' + escapeHtml(message.dataUrl) + '" alt="이미지" onclick="openImage(this.src)" />';
   } else if (message.type === "file" && message.dataUrl) {
-    body = '<a class="msg-file" href="' + escapeHtml(message.dataUrl) + '" download="' + escapeHtml(message.fileName || "file") + '">📎 ' + escapeHtml(message.fileName || "파일") + '</a>';
+    body = '<a class="msg-file" href="' + escapeHtml(message.dataUrl) + '" download="' + escapeHtml(message.fileName || "file") + '">[파일] ' + escapeHtml(message.fileName || "파일") + '</a>';
   } else {
     body = "<p>" + escapeHtml(message.text) + "</p>";
   }
@@ -183,7 +184,16 @@ function leaveRoom() {
 
 function connectLocalChannel() {
   state.channel = new BroadcastChannel("quiet-room:" + state.roomId);
-  state.channel.addEventListener("message", function (e) { handleRelayMessage(e.data); });
+  state.channel.addEventListener("message", function (e) {
+    var data = e.data;
+    if (!data) return;
+    // 공개방: 평문 메시지가 그대로 옴 (relay 의 handleRelayMessage 형태와 동일)
+    if (state.isPublic) { handleRelayMessage(data); return; }
+    // 개인방: BroadcastChannel 에는 packet 객체가 래핑 없이 그대로 옴 (relay 와 다른 경로)
+    if (data.roomId === state.roomId && data.sender !== state.clientId) {
+      receivePrivatePacket(data);
+    }
+  });
 }
 
 function connectRelay(url, opts) {
@@ -217,7 +227,7 @@ function connectRelay(url, opts) {
       if (parsed.type === "pong") return;
 
       if (parsed.type === "error" && parsed.code === "KEY_MISMATCH") {
-        appendSystem("⚠ 이 방은 이미 다른 비밀키로 운영 중입니다. 비밀키를 확인 후 다시 시도해주세요.");
+        appendSystem("[경고] 이 방은 이미 다른 비밀키로 운영 중입니다. 비밀키를 확인 후 다시 시도해주세요.");
         setStatus(els.roomStatus, "비밀키가 일치하지 않습니다", "warn");
         state.intentionalClose = true;
         leaveRoom();
@@ -234,7 +244,7 @@ function connectRelay(url, opts) {
       resetOnlineStatus();
 
       if (event.code === 4003) {
-        appendSystem("⚠ 이 방은 이미 다른 비밀키로 운영 중입니다.");
+        appendSystem("[경고] 이 방은 이미 다른 비밀키로 운영 중입니다.");
         setStatus(els.roomStatus, "비밀키가 일치하지 않습니다", "warn");
         state.intentionalClose = true;
         leaveRoom();
@@ -244,7 +254,7 @@ function connectRelay(url, opts) {
       }
 
       if (event.code === 4000) {
-        appendSystem("⚠ 관리자에 의해 방이 종료되었습니다.");
+        appendSystem("[알림] 관리자에 의해 방이 종료되었습니다.");
         state.intentionalClose = true;
         leaveRoom();
         return;
@@ -286,11 +296,11 @@ function handleRelayMessage(parsed) {
   if (!parsed) return;
 
   if (parsed.type === "system") {
-    if (parsed.event === "join") appendSystem("✦ " + parsed.nickname + " 님이 입장했습니다");
-    else if (parsed.event === "leave") appendSystem("✧ " + parsed.nickname + " 님이 퇴장했습니다");
-    else if (parsed.event === "rateLimit") appendSystem("⚠ " + (parsed.message || "메시지 속도 제한"), "rate-limit-msg");
+    if (parsed.event === "join") appendSystem("+ " + parsed.nickname + " 님이 입장했습니다");
+    else if (parsed.event === "leave") appendSystem("- " + parsed.nickname + " 님이 퇴장했습니다");
+    else if (parsed.event === "rateLimit") appendSystem("[경고] " + (parsed.message || "메시지 속도 제한"), "rate-limit-msg");
     else if (parsed.event === "kill") {
-      appendSystem("⚠ " + (parsed.message || "관리자에 의해 방이 종료되었습니다."));
+      appendSystem("[알림] " + (parsed.message || "관리자에 의해 방이 종료되었습니다."));
       state.intentionalClose = true;
       leaveRoom();
     }
@@ -301,7 +311,7 @@ function handleRelayMessage(parsed) {
   if (parsed.type === "online") { setStatus(els.onlineStatus, "접속 중 " + parsed.count + "명", "good"); return; }
 
   if (parsed.type === "packet" && parsed.roomId === state.roomId && parsed.sender !== state.clientId) {
-    receivePrivatePacket(parsed);
+    receivePrivatePacket(parsed.body);
     return;
   }
 
@@ -316,7 +326,7 @@ function receivePrivatePacket(packet) {
   decryptPayload(packet).then(function (msg) {
     appendMessage(msg, false);
   }).catch(function () {
-    appendSystem("⚠ 메시지를 복호화할 수 없습니다.");
+    appendSystem("[경고] 메시지를 복호화할 수 없습니다.");
   });
 }
 
@@ -379,7 +389,7 @@ function joinPublicRoom(roomId, roomName) {
   setStatus(els.cryptoStatus, "평문 (공개방)");
   setStatus(els.roomStatus, roomName, "good");
   clearMessages();
-  appendSystem("✦ " + roomName + "에 입장했습니다.");
+  appendSystem("+ " + roomName + "에 입장했습니다.");
 }
 
 els.publicRoomList.querySelectorAll(".room-card").forEach(function (card) {
@@ -389,10 +399,27 @@ els.publicRoomList.querySelectorAll(".room-card").forEach(function (card) {
 });
 
 // ── 메시지 전송 ────────────────────────────────────────────────────────────
+function clientRateLimitOk() {
+  var now = Date.now();
+  if (!state.msgWindowStart || now - state.msgWindowStart >= 1500) {
+    state.msgWindowStart = now;
+    state.msgCount = 1;
+    return true;
+  }
+  if (state.msgCount >= 3) return false;
+  state.msgCount++;
+  return true;
+}
+
 els.form.addEventListener("submit", function (event) {
   event.preventDefault();
   var text = els.messageInput.value.trim();
   if (!text || text.length > 2000) return;
+
+  if (!clientRateLimitOk()) {
+    appendSystem("[경고] 너무 빠르게 보내고 있습니다. 잠시 후 다시 시도하세요.", "rate-limit-msg");
+    return;
+  }
 
   if (state.isPublic) {
     var session = getHubSession();
@@ -474,7 +501,7 @@ function copyInvite() {
   if (els.roomId.value.trim()) params.set("room", els.roomId.value.trim());
   params.set("relay", els.relayUrl.value.trim() || RELAY_URL_DEFAULT);
   navigator.clipboard.writeText(location.origin + location.pathname + "#" + params.toString()).then(function () {
-    els.copyInviteButton.textContent = "복사됨 ✓";
+    els.copyInviteButton.textContent = "복사됨";
     setTimeout(function () { els.copyInviteButton.textContent = "초대 링크 복사"; }, 1400);
   });
 }
