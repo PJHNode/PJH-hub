@@ -18,37 +18,38 @@
     html, body { height: 100%; background: var(--page); color: var(--ink); font-size: 13px; }
     [data-theme="dark"] body { background: #080808; }
 
-    /* ── 레이아웃 ── */
     .shell { max-width: 760px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 
-    /* ── 탑바 ── */
     .topbar { background: var(--bar); padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; gap: 8px; flex-wrap: wrap; }
     .brand-row { display: flex; align-items: center; gap: 8px; }
     .mark { width: 20px; height: 20px; border: 1px solid #fff; color: #fff; font-weight: 700; font-size: 12px; display: grid; place-items: center; }
     .topbar h1 { font-size: 13px; color: #fff; letter-spacing: 0.05em; font-weight: 700; }
     .eyebrow { font-size: 9px; color: #888; letter-spacing: 0.04em; }
-    .topbar-controls { display: flex; gap: 6px; }
+    .topbar-controls { display: flex; align-items: center; gap: 6px; }
     .topbar-btn { background: transparent; border: 1px solid #444; color: #888; font-size: 9px; letter-spacing: 0.08em; padding: 2px 6px; cursor: pointer; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; }
     .topbar-btn:hover { background: #fff; color: #000; border-color: #fff; }
     [data-theme="dark"] .topbar-btn:hover { background: #ddd; color: #000; border-color: #ddd; }
+    .user-badge { font-size: 10px; color: #bbb; padding: 2px 6px; border: 1px solid #444; }
+
+    /* ── 로그인 필요 안내 ── */
+    .login-notice { padding: 14px 12px; border-bottom: 1px solid var(--line); background: var(--soft); font-size: 11.5px; color: var(--muted); line-height: 1.6; }
+    .login-notice a { color: var(--ink); text-decoration: underline; }
 
     /* ── 작성 폼 ── */
     .write-box { padding: 12px; border-bottom: 1px solid var(--line); background: var(--soft); display: flex; flex-direction: column; gap: 6px; }
-    .write-box label { font-size: 10px; color: var(--muted); letter-spacing: 0.03em; display: grid; gap: 3px; }
-    .write-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .write-box input, .write-box textarea {
-      width: 100%; padding: 5px 7px; border: 1px solid var(--line); border-radius: 0;
-      background: var(--field); color: var(--ink); font: inherit; font-size: 12px; resize: vertical;
+    .write-box textarea {
+      width: 100%; padding: 7px; border: 1px solid var(--line); border-radius: 0;
+      background: var(--field); color: var(--ink); font: inherit; font-size: 12px; resize: vertical; min-height: 64px;
     }
-    .write-box input:focus, .write-box textarea:focus { outline: none; border-color: var(--ink); }
-    textarea { min-height: 64px; }
+    .write-box textarea:focus { outline: none; border-color: var(--ink); }
     .char-count { font-size: 10px; color: var(--muted); text-align: right; }
     .btn-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .notice-tip { font-size: 10px; color: var(--muted); }
+    .write-as { font-size: 10px; color: var(--muted); }
     button { border: 1px solid #999; background: #e8e8e8; color: #111; padding: 4px 14px; font: inherit; font-size: 12px; cursor: pointer; border-radius: 0; }
     button:hover { background: #fff; border-color: #444; }
     button.primary { background: #111; color: #fff; border-color: #000; font-weight: 700; }
     button.primary:hover { background: #333; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
     [data-theme="dark"] button { background: #1a1a1a; border-color: #444; color: #ccc; }
     [data-theme="dark"] button:hover { background: #2a2a2a; }
     [data-theme="dark"] button.primary { background: #ddd; color: #000; border-color: #ddd; }
@@ -63,23 +64,8 @@
     .post-content { font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
     .post-del { background: transparent; border: 1px solid var(--line); color: var(--muted); font-size: 10px; padding: 1px 6px; }
     .post-del:hover { border-color: #888; color: var(--ink); background: transparent; }
-    [data-theme="dark"] .post-del { background: transparent; }
 
-    /* ── 삭제 모달 ── */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: var(--page); border: 1px solid var(--line); padding: 20px; width: min(320px, 90vw); display: flex; flex-direction: column; gap: 12px; }
-    .modal h3 { font-size: 13px; }
-    .modal input { width: 100%; padding: 5px 7px; border: 1px solid var(--line); background: var(--field); color: var(--ink); font: inherit; border-radius: 0; }
-    .modal input:focus { outline: none; border-color: var(--ink); }
-    .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
-    .modal-err { font-size: 11px; color: #c66; display: none; }
-    .modal-err.show { display: block; }
-
-    /* ── 빈 상태 / 로딩 ── */
     .empty-state { padding: 40px; text-align: center; color: var(--muted); font-size: 12px; line-height: 2; }
-
-    /* ── 푸터 ── */
     .footer { border-top: 1px solid var(--line); padding: 6px 12px; font-size: 9px; color: var(--muted); letter-spacing: 0.05em; text-align: center; background: var(--soft); }
   </style>
 </head>
@@ -87,30 +73,30 @@
 <div class="shell">
   <header class="topbar">
     <div class="brand-row">
-      <span class="mark">B</span>
+      <span class="mark">F</span>
       <div>
         <h1>Forum</h1>
-        <p class="eyebrow">no login · anonymous · delete with password</p>
+        <p class="eyebrow">PJH Hub account required</p>
       </div>
     </div>
     <div class="topbar-controls">
+      <span class="user-badge" id="userBadge" style="display:none;"></span>
       <button class="topbar-btn" id="themeToggle">[ DARK ]</button>
       <a class="topbar-btn" href="../">[ HUB ]</a>
     </div>
   </header>
 
-  <!-- 작성 폼 -->
-  <div class="write-box">
-    <div class="write-row">
-      <label>닉네임 <input id="nickname" type="text" maxlength="20" placeholder="익명" autocomplete="off" /></label>
-      <label>삭제 비밀번호 <input id="password" type="password" placeholder="나중에 삭제할 때 필요" autocomplete="off" /></label>
-    </div>
-    <label>
-      내용
-      <textarea id="content" maxlength="500" placeholder="무슨 생각이든 익명으로 남겨보세요. (최대 500자)"></textarea>
-    </label>
+  <!-- 비로그인 안내 -->
+  <div class="login-notice" id="loginNotice" style="display:none;">
+    <strong>Forum은 PJH Hub 계정이 필요합니다.</strong><br />
+    <a href="../">PJH Hub로 이동해서 로그인 / 가입</a>한 뒤 이 페이지로 돌아오세요. 글 읽기는 로그인 없이도 가능합니다.
+  </div>
+
+  <!-- 작성 폼 (로그인 시에만 표시) -->
+  <div class="write-box" id="writeBox" style="display:none;">
+    <textarea id="content" maxlength="500" placeholder="무슨 생각이든 자유롭게 남겨보세요. (최대 500자)"></textarea>
     <div class="btn-row">
-      <span class="notice-tip">비밀번호는 내 글 삭제에만 사용됩니다.</span>
+      <span class="write-as" id="writeAs"></span>
       <div style="display:flex;align-items:center;gap:8px;">
         <span class="char-count" id="charCount">0 / 500</span>
         <button class="primary" id="submitBtn">등록</button>
@@ -126,23 +112,9 @@
   <footer class="footer">© 2026 PJH HUB · Anonymous &amp; Zero-Knowledge Tools</footer>
 </div>
 
-<!-- 삭제 모달 -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <h3>글 삭제</h3>
-    <p style="font-size:11px;color:var(--muted);">작성 시 입력한 비밀번호를 입력하세요.</p>
-    <input type="password" id="deletePassword" placeholder="비밀번호" />
-    <p class="modal-err" id="deleteErr">비밀번호가 맞지 않습니다.</p>
-    <div class="modal-btns">
-      <button id="deleteCancelBtn">취소</button>
-      <button class="primary" id="deleteConfirmBtn">삭제</button>
-    </div>
-  </div>
-</div>
-
+<script src="../auth-widget.js"></script>
 <script>
-  // ── 설정 ── Worker URL을 배포 후 교체하세요
-  const API = "https://quiet-board.chaostatix.workers.dev";
+  const API = "https://forum.chaostatix.workers.dev";
 
   // ── 테마 ──
   function initTheme() {
@@ -158,20 +130,36 @@
   }
   function updateThemeBtn() {
     var btn = document.getElementById("themeToggle");
-    if (!btn) return;
     btn.textContent = document.documentElement.getAttribute("data-theme") === "dark" ? "[ LIGHT ]" : "[ DARK ]";
   }
   document.getElementById("themeToggle").addEventListener("click", toggleTheme);
 
-  // ── 글자 수 카운트 ──
-  var contentEl = document.getElementById("content");
-  contentEl.addEventListener("input", function() {
-    document.getElementById("charCount").textContent = contentEl.value.length + " / 500";
+  // ── 로그인 상태에 따라 작성 UI 토글 ──
+  function refreshAuthUI() {
+    var session = window.PJHAuth ? window.PJHAuth.getSession() : null;
+    var loginNotice = document.getElementById("loginNotice");
+    var writeBox = document.getElementById("writeBox");
+    var userBadge = document.getElementById("userBadge");
+    var writeAs = document.getElementById("writeAs");
+
+    if (session) {
+      loginNotice.style.display = "none";
+      writeBox.style.display = "flex";
+      userBadge.style.display = "inline-flex";
+      userBadge.textContent = session.realName + " (" + session.userId + ")";
+      writeAs.textContent = session.realName + " 님으로 작성";
+    } else {
+      loginNotice.style.display = "block";
+      writeBox.style.display = "none";
+      userBadge.style.display = "none";
+    }
+  }
+
+  document.getElementById("content").addEventListener("input", function() {
+    document.getElementById("charCount").textContent = this.value.length + " / 500";
   });
 
-  // ── 글 목록 로드 ──
   function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-
   function timeAgo(ts) {
     var diff = Date.now() - ts;
     var m = Math.floor(diff/60000), h = Math.floor(diff/3600000), d = Math.floor(diff/86400000);
@@ -179,6 +167,11 @@
     if (h > 0) return h + "시간 전";
     if (m > 0) return m + "분 전";
     return "방금";
+  }
+
+  function currentUserId() {
+    var session = window.PJHAuth ? window.PJHAuth.getSession() : null;
+    return session ? session.userId : null;
   }
 
   async function loadPosts() {
@@ -190,13 +183,15 @@
         list.innerHTML = '<div class="empty-state">아직 글이 없습니다.<br>첫 번째 글을 남겨보세요.</div>';
         return;
       }
+      var myId = currentUserId();
       list.innerHTML = posts.map(function(p) {
+        var canDelete = myId && myId === p.user_id;
         return '<div class="post-item">' +
           '<div class="post-meta">' +
-          '<span class="post-nick">' + esc(p.nickname) + '</span>' +
+          '<span class="post-nick">' + esc(p.real_name) + '</span>' +
           '<div style="display:flex;align-items:center;gap:8px;">' +
           '<span class="post-date">' + timeAgo(p.created_at) + '</span>' +
-          '<button class="post-del" onclick="openDelete(' + p.id + ')">삭제</button>' +
+          (canDelete ? '<button class="post-del" onclick="deletePost(' + p.id + ')">삭제</button>' : '') +
           '</div></div>' +
           '<div class="post-content">' + esc(p.content) + '</div>' +
           '</div>';
@@ -206,21 +201,19 @@
     }
   }
 
-  // ── 글 등록 ──
   document.getElementById("submitBtn").addEventListener("click", async function() {
-    var nickname = document.getElementById("nickname").value.trim() || "익명";
-    var password = document.getElementById("password").value;
-    var content  = document.getElementById("content").value.trim();
+    var session = window.PJHAuth ? window.PJHAuth.getSession() : null;
+    if (!session) { alert("로그인이 필요합니다."); return; }
+    var content = document.getElementById("content").value.trim();
     if (!content) { alert("내용을 입력하세요."); return; }
-    if (!password) { alert("삭제 비밀번호를 입력하세요."); return; }
 
     this.disabled = true;
     this.textContent = "등록 중…";
     try {
       var res = await fetch(API + "/posts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nickname, content, password }),
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.token },
+        body: JSON.stringify({ content: content }),
       });
       if (res.ok) {
         document.getElementById("content").value = "";
@@ -235,57 +228,27 @@
     this.textContent = "등록";
   });
 
-  // ── 삭제 모달 ──
-  var deleteTargetId = null;
-
-  function openDelete(id) {
-    deleteTargetId = id;
-    document.getElementById("deletePassword").value = "";
-    document.getElementById("deleteErr").classList.remove("show");
-    document.getElementById("deleteModal").classList.add("open");
-    setTimeout(function() { document.getElementById("deletePassword").focus(); }, 50);
-  }
-
-  document.getElementById("deleteCancelBtn").addEventListener("click", function() {
-    document.getElementById("deleteModal").classList.remove("open");
-  });
-
-  document.getElementById("deleteConfirmBtn").addEventListener("click", async function() {
-    var password = document.getElementById("deletePassword").value;
-    if (!password) return;
-    this.disabled = true;
-    this.textContent = "삭제 중…";
+  async function deletePost(id) {
+    var session = window.PJHAuth ? window.PJHAuth.getSession() : null;
+    if (!session) return;
+    if (!confirm("이 글을 삭제할까요?")) return;
     try {
-      var res = await fetch(API + "/posts/" + deleteTargetId, {
+      var res = await fetch(API + "/posts/" + id, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        headers: { "Authorization": "Bearer " + session.token },
       });
-      if (res.ok) {
-        document.getElementById("deleteModal").classList.remove("open");
-        await loadPosts();
-      } else {
-        document.getElementById("deleteErr").classList.add("show");
-      }
+      if (res.ok) { await loadPosts(); }
+      else { var err = await res.json(); alert(err.error || "삭제 실패"); }
     } catch(e) { alert("서버 연결 실패"); }
-    this.disabled = false;
-    this.textContent = "삭제";
-  });
-
-  // Enter로 삭제 확인
-  document.getElementById("deletePassword").addEventListener("keydown", function(e) {
-    if (e.key === "Enter") document.getElementById("deleteConfirmBtn").click();
-  });
-
-  // 모달 외부 클릭 닫기
-  document.getElementById("deleteModal").addEventListener("click", function(e) {
-    if (e.target === this) this.classList.remove("open");
-  });
+  }
 
   // ── 초기화 ──
   initTheme();
+  refreshAuthUI();
   loadPosts();
-  setInterval(loadPosts, 30000); // 30초마다 자동 새로고침
+  setInterval(loadPosts, 30000);
+  // 로그인/로그아웃이 다른 탭(Hub)에서 일어나도 감지되도록 폴링
+  setInterval(refreshAuthUI, 2000);
 </script>
 </body>
 </html>
